@@ -10,9 +10,9 @@ namespace MESInstaller.Helpers
         //              |---TMAX.zip
         //              |---AGENT.zip
         //              |---MES.zip
-        public static string TMAX_TargetDirectory = @"C:\TMAX";
-        public static string AGENT_TargetDirectory = @"D:\Agent";
-        public static string MES_TargetDirectory = @"D:\MES";
+        public static string TMAX_TargetDirectory { get; set; } = @"C:\TMAX";
+        public static string AGENT_TargetDirectory { get; set; } = @"D:\Agent";
+        public static string MES_TargetDirectory { get; set; } = @"D:\MES";
 
         public static void ContentCopy(string Content_SourceDirectory)
         {
@@ -26,6 +26,8 @@ namespace MESInstaller.Helpers
         {
             // Extract MES content to MES_Directory
             ZipFile.ExtractToDirectory(Path.Combine(Content_SourceDirectory, "MES.zip"), MES_TargetDirectory);
+
+            Directory.CreateDirectory(Path.Combine(MES_TargetDirectory, "EQUIP"));
         }
         public static void CopyAGENT(string Content_SourceDirectory)
         {
