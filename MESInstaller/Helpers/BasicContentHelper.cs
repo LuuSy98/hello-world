@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using MESInstaller.Models;
+using System;
+using System.IO;
 using System.IO.Compression;
 using System.Windows;
 
@@ -19,25 +21,50 @@ namespace MESInstaller.Helpers
             CopyAGENT(Content_SourceDirectory);
             CopyMES(Content_SourceDirectory);
             CopyTMAX(Content_SourceDirectory);
-            MessageBox.Show("Copy and Extract done successfully.");
         }
 
         public static void CopyMES(string Content_SourceDirectory)
         {
             // Extract MES content to MES_Directory
-            ZipFile.ExtractToDirectory(Path.Combine(Content_SourceDirectory, "MES.zip"), MES_TargetDirectory);
+            try
+            {
+                ZipFile.ExtractToDirectory(Path.Combine(Content_SourceDirectory, "MES.zip"), MES_TargetDirectory);
+                Define.Logger.AddLog("BASIC", $"Extract MES.zip to {MES_TargetDirectory} Success");
+            }
+            catch (Exception ex)
+            {
+                Define.Logger.AddLog("BASIC", $"{ex.Message}", IsError : true);
+            }
 
             Directory.CreateDirectory(Path.Combine(MES_TargetDirectory, "EQUIP"));
         }
         public static void CopyAGENT(string Content_SourceDirectory)
         {
             // Extract AGENT content to AGENT_Directory
-            ZipFile.ExtractToDirectory(Path.Combine(Content_SourceDirectory, "AGENT.zip"), AGENT_TargetDirectory);
+
+            try
+            {
+                ZipFile.ExtractToDirectory(Path.Combine(Content_SourceDirectory, "AGENT.zip"), AGENT_TargetDirectory);
+                Define.Logger.AddLog("BASIC", $"Extract AGENT.zip to {AGENT_TargetDirectory} Success");
+            }
+            catch (Exception ex)
+            {
+                Define.Logger.AddLog("BASIC", $"{ex.Message}", IsError : true);
+            }
+
         }
         public static void CopyTMAX(string Content_SourceDirectory)
         {
             //Extract TMAX content to  TMAX_Directory
-            ZipFile.ExtractToDirectory(Path.Combine(Content_SourceDirectory, "TMAX.zip"), TMAX_TargetDirectory);
+            try
+            {
+                ZipFile.ExtractToDirectory(Path.Combine(Content_SourceDirectory, "TMAX.zip"), TMAX_TargetDirectory);
+                Define.Logger.AddLog("BASIC", $"Extract TMAX.zip to {TMAX_TargetDirectory} Success");
+            }
+            catch (Exception ex)
+            {
+                Define.Logger.AddLog("BASIC", $"{ex.Message}", IsError: true);
+            }
         }
     }
 }

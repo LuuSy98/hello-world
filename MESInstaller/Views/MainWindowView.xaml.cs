@@ -25,5 +25,15 @@ namespace MESInstaller.Views
         {
             InitializeComponent();
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            var viewModel = this.DataContext as ViewModels.MainWindowViewModel;
+
+            if (viewModel.BackupDataCommand.CanExecute(e))
+            {
+                viewModel.BackupDataCommand.Execute(e);
+            }
+        }
     }
 }

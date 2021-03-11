@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MESInstaller.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
@@ -7,6 +8,9 @@ namespace MESInstaller.Models
 {
     public class Define
     {
+        public static readonly string BackupFilePath = "BackupData.json";
+        public static LogHelper Logger = new LogHelper();
+
         public static readonly List<string> LINE_LIST = new List<string>
         {
             "IR_LINE",

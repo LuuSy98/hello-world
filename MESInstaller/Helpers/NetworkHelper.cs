@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using MESInstaller.Models;
+using System.Diagnostics;
 
 namespace MESInstaller.Helpers
 {
@@ -15,6 +16,8 @@ namespace MESInstaller.Helpers
             process.StartInfo.Arguments = strCmdArgs;
 
             process.Start();
+
+            Define.Logger.AddLog("NETW", $"Setting adapter \"{adapterName}\" IP {IP} {subMask} {gateWay} Success!");
         }
         public static void SetDNS(string preferredDNS, string alternateDNS, string adapterName = "MES")
         {
@@ -31,6 +34,8 @@ namespace MESInstaller.Helpers
             process.StartInfo.Arguments = strCmdArgs;
 
             process.Start();
+
+            Define.Logger.AddLog("NETW", $"Setting adapter \"{adapterName}\" dns {preferredDNS} Success!");
         }
 
         public static void SetAlternateDNS(string alternateDNS, string adapterName = "MES")
@@ -42,6 +47,8 @@ namespace MESInstaller.Helpers
             process.StartInfo.Arguments = strCmdArgs;
 
             process.Start();
+
+            Define.Logger.AddLog("NETW", $"Setting adapter \"{adapterName}\" dns index=2 {alternateDNS} Success!");
         }
     }
 }

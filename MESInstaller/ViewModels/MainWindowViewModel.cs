@@ -1,7 +1,9 @@
 ﻿using MESInstaller.Helpers;
 using MESInstaller.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Windows;
@@ -9,6 +11,7 @@ using System.Windows.Input;
 
 namespace MESInstaller.ViewModels
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class MainWindowViewModel : PropertyChangedNotifier
     {
         #region Properties
@@ -17,11 +20,15 @@ namespace MESInstaller.ViewModels
             get { return _LineList; }
             set
             {
-                _LineList = value;
-                OnPropertyChanged("LineList");
+                if (_LineList != value)
+                {
+                    _LineList = value;
+                    OnPropertyChanged("LineList");
+                }
             }
         }
 
+        [JsonProperty]
         public string SelectedLine
         {
             get { return _SelectedLine; }
@@ -51,6 +58,7 @@ namespace MESInstaller.ViewModels
             }
         }
 
+        [JsonProperty]
         public string SelectedMachine
         {
             get { return _SelectedMachine; }
@@ -61,6 +69,18 @@ namespace MESInstaller.ViewModels
             }
         }
 
+        public string InputMachineNumber
+        {
+            get { return _InputMachineNumber; }
+            set
+            {
+                _InputMachineNumber = value;
+                OnPropertyChanged("SelectedMachineNumber");
+            }
+        }
+
+
+        [JsonProperty]
         public string IPString
         {
             get { return _IPString; }
@@ -71,6 +91,7 @@ namespace MESInstaller.ViewModels
             }
         }
 
+        [JsonProperty]
         public string SubnetMask
         {
             get { return _SubnetMask; }
@@ -81,6 +102,7 @@ namespace MESInstaller.ViewModels
             }
         }
 
+        [JsonProperty]
         public string DefaultGateway
         {
             get { return _DefaultGateway; }
@@ -91,16 +113,24 @@ namespace MESInstaller.ViewModels
             }
         }
 
-        public string ContentPath
+        [JsonProperty]
+        public string PathToLineList
         {
-            get { return _ContentPath; }
+            get { return _PathToLineList; }
             set
             {
-                _ContentPath = value;
-                OnPropertyChanged("ContentPath");
+                _PathToLineList = value;
+                OnPropertyChanged("PathToLineList");
             }
         }
 
+        public bool DataBuildMode
+        {
+            get
+            {
+                return File.Exists(@"D:\DataBuildMode.txt");
+            }
+        }
         #endregion
 
         #region Command
@@ -110,36 +140,29 @@ namespace MESInstaller.ViewModels
             {
                 return _InstallStartCommand ?? (_InstallStartCommand = new RelayCommand<object>((o) =>
                 {
-                    if (string.IsNullOrEmpty(SelectedLine) || string.IsNullOrEmpty(SelectedMachine))
+                    if (InputValid() == false)
                     {
-                        MessageBox.Show("Selecte line and machine first!");
                         return;
                     }
 
-                    if (string.IsNullOrEmpty(ContentPath))
-                    {
-                        MessageBox.Show("Selecte content directory first!");
-                        return;
-                    }
+                    PrintStartLog();
 
-                    IPAddress ip;
-                    if (IPAddress.TryParse(IPString, out ip) == false)
-                    {
-                        MessageBox.Show("IP wrong format!");
-                        return;
-                    }
+                    string basicContentPath = Path.Combine(PathToLineList, SelectedLine, "BasicContents");
 
-                    BasicContentHelper.ContentCopy(ContentPath);
+                    BasicContentHelper.ContentCopy(basicContentPath);
                     NetworkHelper.SetIP(IPString, SubnetMask, DefaultGateway);
+                    SpecificContentExecute();
+
+                    PrintStopLog();
                 }));
             }
         }
 
-        public ICommand ContentBrowseCommand
+        public ICommand LineListPathBrowseCommand
         {
             get
             {
-                return _ContentBrowseCommand ?? (_ContentBrowseCommand = new RelayCommand<object>((o) =>
+                return _LineListPathBrowseCommand ?? (_LineListPathBrowseCommand = new RelayCommand<object>((o) =>
                 {
                     using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
                     {
@@ -147,18 +170,172 @@ namespace MESInstaller.ViewModels
 
                         if (result == System.Windows.Forms.DialogResult.OK)
                         {
-                            ContentPath = dialog.SelectedPath;
+                            PathToLineList = dialog.SelectedPath;
                         }
                     }
                 }));
             }
         }
-        #endregion
 
-        #region Constructor
+        public ICommand BackupDataCommand
+        {
+            get
+            {
+                return _BackupDataCommand ?? (_BackupDataCommand = new RelayCommand<object>((o) =>
+                {
+                    System.IO.File.WriteAllText(Define.BackupFilePath, JsonConvert.SerializeObject(this, Formatting.Indented));
+                    Define.Logger.AddLog("MAIN", "Program End");
+                    Define.Logger.Dispose();
+                }));
+            }
+        }
+
+        public ICommand NavigateCommand
+        {
+            get
+            {
+                return _NavigateCommand ?? (_NavigateCommand = new RelayCommand<object>((o) =>
+                {
+                    MessageBox.Show("HOI OI, CAI FORM LAM XONG CHUA?");
+                }));
+            }
+        }
+
+#endregion
+
+#region Constructor
         public MainWindowViewModel()
         {
+            Define.Logger.AddLog(new LogData { ProgressName = "MAIN", LogMessage = "Program Started" });
+
             LineList = Define.LINE_LIST;
+
+            LoadBackupData();
+        }
+#endregion
+
+#region Functions
+        private bool InputValid()
+        {
+            if (string.IsNullOrEmpty(SelectedLine) || string.IsNullOrEmpty(SelectedMachine))
+            {
+                MessageBox.Show("Select line and machine first!");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(PathToLineList))
+            {
+                MessageBox.Show("Select content directory first!");
+                return false;
+            }
+
+            if (IPAddress.TryParse(IPString, out IPAddress ip) == false)
+            {
+                MessageBox.Show("IP wrong format!");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(InputMachineNumber))
+            {
+                MessageBox.Show("Input machine number please!");
+                return false;
+            }
+
+            return true;
+        }
+
+        private void LoadBackupData()
+        {
+            if (!File.Exists(Define.BackupFilePath))
+            {
+                return;
+            }
+
+            var backupData = JsonConvert.DeserializeObject<BackupData>(System.IO.File.ReadAllText(Define.BackupFilePath));
+
+            SelectedLine = backupData.SelectedLine;
+            SelectedMachine = backupData.SelectedMachine;
+            IPString = backupData.IPString;
+            PathToLineList = backupData.PathToLineList;
+            SubnetMask = backupData.SubnetMask;
+            DefaultGateway = backupData.DefaultGateway;
+        }
+
+        private void SpecificContentExecute()
+        {
+            string machineDataPath = Path.Combine(PathToLineList, SelectedLine, "Machines", SelectedMachine);
+            MachineData machineData = new MachineData();
+            if (DataBuildMode)
+            {
+                machineData.BackupPaths = new List<string>
+                {
+                    @"D:\TOP\UI",
+                    @"D:\TOP\TASK",
+                    @"D:\TOP\VCM_BONDING",
+                    @"C:\Program Files\VCM_TEST"
+                };
+
+                foreach (string file in Directory.GetFiles(machineDataPath))
+                {
+                    if (file.EndsWith("MachineData.json"))
+                    {
+                        continue;
+                    }
+
+                    machineData.FileDirectors.Add(new FileDirector
+                    {
+                        Source_FilePath = file.Replace(machineDataPath, "").Replace(@"\", ""),
+                        Destination_FolderPath = null
+                    });
+                }
+
+                System.IO.File.WriteAllText(Path.Combine(machineDataPath, "MachineData.json"), JsonConvert.SerializeObject(machineData, Formatting.Indented));
+            }
+            else
+            {
+                machineData = JsonConvert.DeserializeObject<MachineData>(File.ReadAllText(Path.Combine(machineDataPath, "MachineData.json")));
+                machineData.RootPath = machineDataPath;
+                machineData.Execute();
+            }
+        }
+
+        private void PrintStartLog()
+        {
+            Define.Logger.ResetErrorCount();
+
+            string startLog = 
+                $"\n" +
+                $"☛☛☛ START INSTALL MES\n" +
+                $"☛☛☛ MACHINE : {SelectedLine}\\{SelectedMachine} #{InputMachineNumber}\n" +
+                $"☛☛☛ IP      : {IPString} | {SubnetMask} | {DefaultGateway}\n";
+
+            Define.Logger.AddLog("MAIN", startLog);
+        }
+
+        private void PrintStopLog()
+        {
+            int errorCount = Define.Logger.ErrorCount();
+            string stopLog = "";
+            if (errorCount > 0)
+            {
+                stopLog =
+                    $"\n" +
+                    $"☛☛☛ MES INSTALL DONE with {errorCount} ERROR(s)\n";
+
+                Define.Logger.AddLog("MAIN", stopLog);
+
+                MessageBox.Show($"{stopLog} Check error log for more details");
+            }
+            else
+            {
+                stopLog =
+                    $"\n" +
+                    $"☛☛☛ MES INSTALL SUCCESS\n";
+                Define.Logger.AddLog("MAIN", stopLog);
+
+                MessageBox.Show($"{stopLog} Check log for more details");
+            }
+
         }
         #endregion
 
@@ -170,10 +347,13 @@ namespace MESInstaller.ViewModels
         private string _IPString = "172.16.161.";
         private string _SubnetMask = "255.255.255.0";
         private string _DefaultGateway = "172.16.161.1";
-        private string _ContentPath;
+        private string _PathToLineList;
+        private string _InputMachineNumber;
 
         private ICommand _InstallStartCommand;
-        private ICommand _ContentBrowseCommand;
-        #endregion
+        private ICommand _LineListPathBrowseCommand;
+        private ICommand _BackupDataCommand;
+        private ICommand _NavigateCommand; 
+#endregion
     }
 }
