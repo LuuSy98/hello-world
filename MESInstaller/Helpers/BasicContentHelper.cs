@@ -2,11 +2,12 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
 using System.Windows;
 
 namespace MESInstaller.Helpers
 {
-    public class BasicContentHelper
+    public class BasicContentHelper : Helper
     {
         // D:\MESContent
         //              |---TMAX.zip
@@ -16,14 +17,29 @@ namespace MESInstaller.Helpers
         public static string AGENT_TargetDirectory { get; set; } = @"D:\Agent";
         public static string MES_TargetDirectory { get; set; } = @"D:\MES";
 
-        public static void ContentCopy(string Content_SourceDirectory)
+        private string basicContentPath = "";
+        public BasicContentHelper(string basicContentPath, int percentageOfTotal)
         {
-            CopyAGENT(Content_SourceDirectory);
-            CopyMES(Content_SourceDirectory);
-            CopyTMAX(Content_SourceDirectory);
+            this.basicContentPath = basicContentPath;
+            PercentageOfTotal = percentageOfTotal;
         }
 
-        public static void CopyMES(string Content_SourceDirectory)
+        protected override void Execute()
+        {
+            ContentCopy(basicContentPath);
+        }
+
+        public void ContentCopy(string Content_SourceDirectory)
+        {
+            CopyAGENT(Content_SourceDirectory);
+            CompletedPercentage += 30;
+            CopyMES(Content_SourceDirectory);
+            CompletedPercentage += 30;
+            CopyTMAX(Content_SourceDirectory);
+            CompletedPercentage = 100;
+        }
+
+        public void CopyMES(string Content_SourceDirectory)
         {
             // Extract MES content to MES_Directory
             try

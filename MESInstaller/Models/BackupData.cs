@@ -8,9 +8,7 @@ namespace MESInstaller.Models
     {
         public string SelectedLine { get; set; }
         public string SelectedMachine { get; set; }
-        public string IPString { get; set; }
+        public IPData IPInfo { get; set; } = new IPData();
         public string PathToLineList { get; set; }
-        public string SubnetMask { get; set; }
-        public string DefaultGateway { get; set; }
     }
 }

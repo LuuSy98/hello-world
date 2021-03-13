@@ -3,8 +3,27 @@ using System.Diagnostics;
 
 namespace MESInstaller.Helpers
 {
-    public class NetworkHelper
+    public class NetworkHelper : Helper
     {
+        private IPData iPData = new IPData();
+        public NetworkHelper(IPData iPData, int percentageOfTotal)
+        {
+            this.iPData = iPData;
+            PercentageOfTotal = percentageOfTotal;
+        }
+
+        protected override void Execute()
+        {
+            SetIP(iPData.IPString, iPData.SubnetMask, iPData.DefaultGateway);
+            CompletedPercentage += 50;
+
+            if (!iPData.SkipDNS)
+            {
+                SetDNS(iPData.PreferredDNS, iPData.AlternateDNS);
+            }
+            CompletedPercentage = 100;
+        }
+
         public static void SetIP(string IP, string subMask, string gateWay, string adapterName = "MES")
         {
             string strCmdArgs = $"interface ipv4 set address name=\"{adapterName}\" static {IP} {subMask} {gateWay}";

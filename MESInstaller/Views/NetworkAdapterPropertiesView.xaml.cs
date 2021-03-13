@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MESInstaller.Models;
+using MESInstaller.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -17,9 +19,12 @@ namespace MESInstaller.Views
     /// </summary>
     public partial class NetworkAdapterPropertiesView : Window
     {
-        public NetworkAdapterPropertiesView()
+        public NetworkAdapterPropertiesView(ref IPData ipInfo)
         {
             InitializeComponent();
+
+            var viewModel = this.DataContext as NetworkAdapterPropertiesViewModel;
+            viewModel.IPInfo = ipInfo;
         }
     }
 }

@@ -1,11 +1,14 @@
 ﻿using MESInstaller.Helpers;
 using MESInstaller.Models;
+using MESInstaller.Views;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -79,37 +82,14 @@ namespace MESInstaller.ViewModels
             }
         }
 
-
         [JsonProperty]
-        public string IPString
+        public IPData IPInfo
         {
-            get { return _IPString; }
+            get { return _IPInfo; }
             set
             {
-                _IPString = value;
-                OnPropertyChanged("IPString");
-            }
-        }
-
-        [JsonProperty]
-        public string SubnetMask
-        {
-            get { return _SubnetMask; }
-            set
-            {
-                _SubnetMask = value;
-                OnPropertyChanged("SubnetMask");
-            }
-        }
-
-        [JsonProperty]
-        public string DefaultGateway
-        {
-            get { return _DefaultGateway; }
-            set
-            {
-                _DefaultGateway = value;
-                OnPropertyChanged("DefaultGateway");
+                _IPInfo = value;
+                OnPropertyChanged("IPInfo");
             }
         }
 
@@ -124,11 +104,32 @@ namespace MESInstaller.ViewModels
             }
         }
 
-        public bool DataBuildMode
+        public string MachineDataPath
         {
             get
             {
-                return File.Exists(@"D:\DataBuildMode.txt");
+                return Path.Combine(PathToLineList, SelectedLine, "Machines", SelectedMachine);
+            }
+        }
+
+        public string BasicContentPath
+        {
+            get
+            {
+                return Path.Combine(PathToLineList, SelectedLine, "BasicContents");
+            }
+        }
+
+        public int CompletedPercentage
+        {
+            get { return _CompletedPercentage; }
+            set
+            {
+                if (_CompletedPercentage != value)
+                {
+                    _CompletedPercentage = value;
+                    OnPropertyChanged("CompletedPercentage");
+                }
             }
         }
         #endregion
@@ -147,13 +148,33 @@ namespace MESInstaller.ViewModels
 
                     PrintStartLog();
 
-                    string basicContentPath = Path.Combine(PathToLineList, SelectedLine, "BasicContents");
+                    CompletedPercentage = 0;
 
-                    BasicContentHelper.ContentCopy(basicContentPath);
-                    NetworkHelper.SetIP(IPString, SubnetMask, DefaultGateway);
-                    SpecificContentExecute();
+                    IHelper specificContentHelper = new SpecificContentHelper(MachineDataPath, 35);
+                    IHelper basicContentHelper = new BasicContentHelper(BasicContentPath, 35);
+                    IHelper networkHelper = new NetworkHelper(IPInfo, 30);
 
-                    PrintStopLog();
+                    specificContentHelper.Run();
+                    basicContentHelper.Run();
+                    networkHelper.Run();
+
+                    Task task = new Task(() => {
+                        while(!specificContentHelper.IsDone || !basicContentHelper.IsDone || !networkHelper.IsDone)
+                        {
+                            CompletedPercentage = 
+                                  specificContentHelper.PercentageOfTotal * specificContentHelper.CompletedPercentage / 100
+                                + basicContentHelper.PercentageOfTotal * basicContentHelper.CompletedPercentage / 100
+                                + networkHelper.PercentageOfTotal * networkHelper.CompletedPercentage / 100;
+
+                            Thread.Sleep(100);
+                        }
+
+                        CompletedPercentage = 100;
+
+                        PrintStopLog();
+                    });
+
+                    task.Start();
                 }));
             }
         }
@@ -196,7 +217,8 @@ namespace MESInstaller.ViewModels
             {
                 return _NavigateCommand ?? (_NavigateCommand = new RelayCommand<object>((o) =>
                 {
-                    MessageBox.Show("HOI OI, CAI FORM LAM XONG CHUA?");
+                    NetworkAdapterPropertiesView napView = new NetworkAdapterPropertiesView(ref _IPInfo);
+                    napView.ShowDialog();
                 }));
             }
         }
@@ -229,7 +251,7 @@ namespace MESInstaller.ViewModels
                 return false;
             }
 
-            if (IPAddress.TryParse(IPString, out IPAddress ip) == false)
+            if (IPAddress.TryParse(IPInfo.IPString, out IPAddress ip) == false)
             {
                 MessageBox.Show("IP wrong format!");
                 return false;
@@ -255,48 +277,8 @@ namespace MESInstaller.ViewModels
 
             SelectedLine = backupData.SelectedLine;
             SelectedMachine = backupData.SelectedMachine;
-            IPString = backupData.IPString;
+            IPInfo = backupData.IPInfo;
             PathToLineList = backupData.PathToLineList;
-            SubnetMask = backupData.SubnetMask;
-            DefaultGateway = backupData.DefaultGateway;
-        }
-
-        private void SpecificContentExecute()
-        {
-            string machineDataPath = Path.Combine(PathToLineList, SelectedLine, "Machines", SelectedMachine);
-            MachineData machineData = new MachineData();
-            if (DataBuildMode)
-            {
-                machineData.BackupPaths = new List<string>
-                {
-                    @"D:\TOP\UI",
-                    @"D:\TOP\TASK",
-                    @"D:\TOP\VCM_BONDING",
-                    @"C:\Program Files\VCM_TEST"
-                };
-
-                foreach (string file in Directory.GetFiles(machineDataPath))
-                {
-                    if (file.EndsWith("MachineData.json"))
-                    {
-                        continue;
-                    }
-
-                    machineData.FileDirectors.Add(new FileDirector
-                    {
-                        Source_FilePath = file.Replace(machineDataPath, "").Replace(@"\", ""),
-                        Destination_FolderPath = null
-                    });
-                }
-
-                System.IO.File.WriteAllText(Path.Combine(machineDataPath, "MachineData.json"), JsonConvert.SerializeObject(machineData, Formatting.Indented));
-            }
-            else
-            {
-                machineData = JsonConvert.DeserializeObject<MachineData>(File.ReadAllText(Path.Combine(machineDataPath, "MachineData.json")));
-                machineData.RootPath = machineDataPath;
-                machineData.Execute();
-            }
         }
 
         private void PrintStartLog()
@@ -307,7 +289,7 @@ namespace MESInstaller.ViewModels
                 $"\n" +
                 $"☛☛☛ START INSTALL MES\n" +
                 $"☛☛☛ MACHINE : {SelectedLine}\\{SelectedMachine} #{InputMachineNumber}\n" +
-                $"☛☛☛ IP      : {IPString} | {SubnetMask} | {DefaultGateway}\n";
+                $"☛☛☛ IP      : {IPInfo.IPString} | {IPInfo.SubnetMask} | {IPInfo.DefaultGateway}\n";
 
             Define.Logger.AddLog("MAIN", startLog);
         }
@@ -344,11 +326,10 @@ namespace MESInstaller.ViewModels
         private string _SelectedLine;
         private List<string> _MachineList;
         private string _SelectedMachine;
-        private string _IPString = "172.16.161.";
-        private string _SubnetMask = "255.255.255.0";
-        private string _DefaultGateway = "172.16.161.1";
+        private IPData _IPInfo = new IPData();
         private string _PathToLineList;
         private string _InputMachineNumber;
+        private int _CompletedPercentage;
 
         private ICommand _InstallStartCommand;
         private ICommand _LineListPathBrowseCommand;

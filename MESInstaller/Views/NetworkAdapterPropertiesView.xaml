@@ -4,7 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MESInstaller.Views"
+        xmlns:vml="clr-namespace:MESInstaller.VML"
+        vml:ViewModelLocator.AutoHookedUpViewModel="True"
         mc:Ignorable="d" ResizeMode="NoResize"
+        x:Name="root"
         Title="NetworkAdapterPropertiesView" Height="400" Width="500">
 
     <Window.Resources>
@@ -46,28 +49,29 @@
         <Label  Content="Alternate DNS" Grid.Row="5" Grid.Column="0"
                 Style="{StaticResource LabelStyle}"/>
 
-        <CheckBox Content="Don't Use DNS Server"
-            Grid.Row="3" Grid.Column="0"
-            FontSize="16" FontFamily="Times New Roman" Margin="0,0,10,10"
-            VerticalAlignment="Bottom" Height="18"
-            HorizontalAlignment="Left"/>
+        <CheckBox Content="Don't Use DNS Server" Grid.Row="3" Grid.Column="0"
+            FontSize="16" FontFamily="Times New Roman" Height="18" Margin="0,0,10,10"
+            VerticalAlignment="Bottom" HorizontalAlignment="Left"
+            IsChecked="{Binding IPInfo.SkipDNS, Mode=TwoWay}"/>
 
-        <TextBox Grid.Column="1" Grid.Row="0" Margin="0 10"
-            TextAlignment="Center"/>
-        <TextBox Grid.Column="1" Grid.Row="1" Margin="0 10"
-            TextAlignment="Center"/>
-        <TextBox Grid.Column="1" Grid.Row="2" Margin="0 10"
-            TextAlignment="Center"/>
-        <TextBox Grid.Column="1" Grid.Row="4" Margin="0 10"
-            TextAlignment="Center"/>
-        <TextBox Grid.Column="1" Grid.Row="5" Margin="0 10"
-            TextAlignment="Center"/>
+        <TextBox Grid.Column="1" Grid.Row="0" Margin="0 10" TextAlignment="Center" FontSize="20"
+            Text="{Binding IPInfo.IPString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <TextBox Grid.Column="1" Grid.Row="1" Margin="0 10" TextAlignment="Center" FontSize="20"
+            Text="{Binding IPInfo.SubnetMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <TextBox Grid.Column="1" Grid.Row="2" Margin="0 10" TextAlignment="Center" FontSize="20"
+            Text="{Binding IPInfo.DefaultGateway, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <TextBox Grid.Column="1" Grid.Row="4" Margin="0 10" TextAlignment="Center" FontSize="20"
+            Text="{Binding IPInfo.PreferredDNS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            IsReadOnly="{Binding IPInfo.SkipDNS}"/>
+        <TextBox Grid.Column="1" Grid.Row="5" Margin="0 10" TextAlignment="Center" FontSize="20"
+            Text="{Binding IPInfo.AlternateDNS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            IsReadOnly="{Binding IPInfo.SkipDNS}"/>
 
         <StackPanel Grid.Row="6" Grid.ColumnSpan="2" Orientation="Horizontal"
             HorizontalAlignment="Right">
             
-            <Button Content="OK" Width="80" Margin="0 10 10 0"/>
-            <Button Content="Cancel" Width="80" Margin="0 10 0 0"/>
+            <Button Content="OK" Width="80" Margin="0 10 10 0"
+                Command="{Binding ConfirmCommand}" CommandParameter="{Binding ElementName=root}"/>
 
         </StackPanel>
         
