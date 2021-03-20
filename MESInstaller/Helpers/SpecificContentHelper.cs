@@ -29,7 +29,14 @@ namespace MESInstaller.Helpers
 
         protected override void Execute()
         {
-            SpecificContentExecute();
+            try
+            {
+                SpecificContentExecute();
+            }
+            catch(Exception ex)
+            {
+                Define.Logger.AddLog("SPECIFIC", $"{ex.Message}", IsError: true);
+            }
         }
 
         public void SpecificContentExecute()
@@ -81,6 +88,9 @@ namespace MESInstaller.Helpers
 
         public void MachineFolderCreate(MachineData machineData)
         {
+            if (machineData.ToCreatePaths == null) return;
+            if (machineData.ToCreatePaths.Count == 0) return;
+
             foreach (string folder in machineData.ToCreatePaths)
             {
                 Directory.CreateDirectory(folder);
@@ -90,6 +100,9 @@ namespace MESInstaller.Helpers
 
         public void MachineFolderBackup(MachineData machineData)
         {
+            if (machineData.BackupPaths == null) return;
+            if (machineData.BackupPaths.Count == 0) return;
+
             foreach (string folder in machineData.BackupPaths)
             {
                 if (!Directory.Exists(folder))
@@ -124,6 +137,8 @@ namespace MESInstaller.Helpers
                 MessageBox.Show("Backup data first");
                 return;
             }
+            if (machineData.FileDirectors == null) return;
+            if (machineData.FileDirectors.Count == 0) return;
 
             foreach (var fileDirector in machineData.FileDirectors)
             {

@@ -1,4 +1,5 @@
 ﻿using MESInstaller.Models;
+using System;
 using System.Diagnostics;
 
 namespace MESInstaller.Helpers
@@ -14,14 +15,21 @@ namespace MESInstaller.Helpers
 
         protected override void Execute()
         {
-            SetIP(iPData.IPString, iPData.SubnetMask, iPData.DefaultGateway);
-            CompletedPercentage += 50;
-
-            if (!iPData.SkipDNS)
+            try
             {
-                SetDNS(iPData.PreferredDNS, iPData.AlternateDNS);
+                SetIP(iPData.IPString, iPData.SubnetMask, iPData.DefaultGateway);
+                CompletedPercentage += 50;
+
+                if (!iPData.SkipDNS)
+                {
+                    SetDNS(iPData.PreferredDNS, iPData.AlternateDNS);
+                }
+                CompletedPercentage = 100;
             }
-            CompletedPercentage = 100;
+            catch(Exception ex)
+            {
+                Define.Logger.AddLog("NETWORK", $"{ex.Message}", IsError: true);
+            }
         }
 
         public static void SetIP(string IP, string subMask, string gateWay, string adapterName = "MES")
