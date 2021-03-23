@@ -11,5 +11,7 @@ namespace MESInstaller.Helpers
         public static bool UseBasicContentHelper { get; set; } = true;
         public static bool UseNetworkHelper { get; set; } = true;
         public static bool UseSpecificContentHelper { get; set; } = true;
+
+        public static bool DataBuildMode { get; set; } = false;
     }
 }

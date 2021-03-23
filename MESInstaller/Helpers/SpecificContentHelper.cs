@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 
@@ -11,13 +12,11 @@ namespace MESInstaller.Helpers
 {
     public class SpecificContentHelper : Helper
     {
-        public static bool DataBuildMode
-        {
-            get
-            {
-                return File.Exists(@"D:\DataBuildMode.txt");
-            }
-        }
+        [DllImport("kernel32")]
+        private static extern long WritePrivateProfileString(string section, string key, string val, string filePath);
+
+        [DllImport("kernel32")]
+        private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retVal, int size, string filePath);
 
         private string machineDataPath = "";
 
@@ -44,7 +43,7 @@ namespace MESInstaller.Helpers
         public void SpecificContentExecute()
         {
             MachineData machineData = new MachineData();
-            if (DataBuildMode)
+            if (HelperStatus.DataBuildMode)
             {
                 machineData.BackupPaths = new List<string>
                 {
@@ -97,6 +96,22 @@ namespace MESInstaller.Helpers
             {
                 Directory.CreateDirectory(folder);
                 Define.Logger.AddLog("DATA", $"Create \'{folder}\' Success!");
+            }
+        }
+
+        public void MachineFileCreate(MachineData machineData)
+        {
+            if (machineData.ToCreateFiles == null) return;
+            if (machineData.ToCreateFiles.Count == 0) return;
+
+            foreach (string file in machineData.ToCreateFiles)
+            {
+                // Create file if file not created
+                if (File.Exists(file) == false)
+                {
+                    File.Create(file);
+                    Define.Logger.AddLog("DATA", $"Create \'{file}\' Success!");
+                }
             }
         }
 
@@ -171,6 +186,18 @@ namespace MESInstaller.Helpers
                 File.Copy(sourceFile, destFile, true);
 
                 Define.Logger.AddLog("DATA", $"Copy \'{sourceFile}\' to \'{destFile}\' Success");
+            }
+        }
+
+        public void CreateProfileString(MachineData machineData)
+        {
+            if (machineData.ProfileStrings == null) return;
+            if (machineData.ProfileStrings.Count == 0) return;
+
+            foreach(var profile in machineData.ProfileStrings)
+            {
+                WritePrivateProfileString(profile.Section, profile.Key, profile.Value, profile.FilePath);
+                Define.Logger.AddLog("DATA", $"Write \"{profile.Section}\"{profile.Key}={profile.Value} to file {profile.FilePath} Success!");
             }
         }
     }

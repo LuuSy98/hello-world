@@ -8,13 +8,20 @@
     xmlns:helper="clr-namespace:MESInstaller.Helpers"
     mc:Ignorable="d" Closing="Window_Closing"
     vml:ViewModelLocator.AutoHookedUpViewModel="True"
-    Title="MainWindow" Height="500" Width="800" MinHeight="450" MinWidth="500">
+    Title="MainWindow" Height="520" Width="800" MinHeight="450" MinWidth="500">
 
     <Window.Resources>
         <helper:HelperStatus x:Key="HelperStatus"/>
     </Window.Resources>
 
     <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_Developer">
+                <MenuItem Header="Data Build Mode"
+                    IsCheckable="True" IsChecked="{Binding Path=DataBuildMode, Source={StaticResource HelperStatus}, UpdateSourceTrigger=PropertyChanged}"/>
+            </MenuItem>
+        </Menu>
+
         <Label Content="TOPV MES Installer" HorizontalContentAlignment="Center"
             FontSize="40" FontWeight="Bold" DockPanel.Dock="Top"/>
 
