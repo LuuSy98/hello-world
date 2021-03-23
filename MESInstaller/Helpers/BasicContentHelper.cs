@@ -29,6 +29,7 @@ namespace MESInstaller.Helpers
             if (HelperStatus.UseBasicContentHelper == false) return;
 
             ContentCopy(basicContentPath);
+            System.Diagnostics.Process.Start(@"D:\MES\AGENT_POWER\setup.exe");
         }
 
         public void ContentCopy(string Content_SourceDirectory)
