@@ -34,7 +34,7 @@ namespace MESInstaller.Helpers
             {
                 SpecificContentExecute();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Define.Logger.AddLog("SPECIFIC", $"{ex.Message}", IsError: true);
             }
@@ -76,12 +76,18 @@ namespace MESInstaller.Helpers
                 CompletedPercentage = 10;
 
                 MachineFolderCreate(machineData);
-                CompletedPercentage = 40;
+                CompletedPercentage = 20;
+
+                MachineFileCreate(machineData);
+                CompletedPercentage = 30;
 
                 MachineFolderBackup(machineData);
                 CompletedPercentage = 60;
 
                 CopyAndOverrideFile(machineData);
+                CompletedPercentage = 90;
+
+                CreateProfileString(machineData);
             }
 
             CompletedPercentage = 100;
@@ -194,7 +200,7 @@ namespace MESInstaller.Helpers
             if (machineData.ProfileStrings == null) return;
             if (machineData.ProfileStrings.Count == 0) return;
 
-            foreach(var profile in machineData.ProfileStrings)
+            foreach (var profile in machineData.ProfileStrings)
             {
                 WritePrivateProfileString(profile.Section, profile.Key, profile.Value, profile.FilePath);
                 Define.Logger.AddLog("DATA", $"Write \"{profile.Section}\"{profile.Key}={profile.Value} to file {profile.FilePath} Success!");
