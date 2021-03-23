@@ -29,6 +29,8 @@ namespace MESInstaller.Helpers
 
         protected override void Execute()
         {
+            if (HelperStatus.UseSpecificContentHelper == false) return;
+
             try
             {
                 SpecificContentExecute();
@@ -110,21 +112,41 @@ namespace MESInstaller.Helpers
                     continue;
                 }
 
-                Directory.CreateDirectory(folder.Replace(folder, $"{folder} - NO MES"));
+                string backupFolderName = $"{folder} - NO MES";
+
+                if (Directory.Exists(backupFolderName))
+                {
+                    MessageBoxResult result = MessageBox.Show(
+                        $"{backupFolderName} folder already exist.\nDo you want to create new backup folder?",
+                        "Attention",
+                        MessageBoxButton.YesNo);
+
+                    if (result != MessageBoxResult.Yes)
+                    {
+                        machineData.AlreadyBackup = true;
+                        return;
+                    }
+                    else
+                    {
+                        backupFolderName = $"{folder} - NO MES_{DateTime.Now.ToString("yyMMddHHmmss")}";
+                    }
+                }
+
+                Directory.CreateDirectory(backupFolderName);
 
                 //Now Create all of the directories
                 foreach (string dirPath in Directory.GetDirectories(folder, "*", SearchOption.AllDirectories))
                 {
-                    Directory.CreateDirectory(dirPath.Replace(folder, $"{folder} - NO MES"));
+                    Directory.CreateDirectory(dirPath.Replace(folder, backupFolderName));
                 }
 
                 //Copy all the files & Replaces any files with the same name
                 foreach (string newPath in Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories))
                 {
-                    File.Copy(newPath, newPath.Replace(folder, $"{folder} - NO MES"), true);
+                    File.Copy(newPath, newPath.Replace(folder, backupFolderName), true);
                 }
 
-                Define.Logger.AddLog("DATA", $"Backup \'{folder}\' to \'{folder.Replace(folder, $"{folder} - NO MES")}\' Success!");
+                Define.Logger.AddLog("DATA", $"Backup \'{folder}\' to \'{backupFolderName}\' Success!");
             }
 
             machineData.AlreadyBackup = true;

@@ -154,9 +154,9 @@ namespace MESInstaller.ViewModels
                     IHelper basicContentHelper = new BasicContentHelper(BasicContentPath, 35);
                     IHelper networkHelper = new NetworkHelper(IPInfo, 30);
 
-                    specificContentHelper.Run();
-                    basicContentHelper.Run();
                     networkHelper.Run();
+                    basicContentHelper.Run();
+                    specificContentHelper.Run();
 
                     Task task = new Task(() => {
                         while(!specificContentHelper.IsDone || !basicContentHelper.IsDone || !networkHelper.IsDone)
@@ -204,7 +204,17 @@ namespace MESInstaller.ViewModels
             {
                 return _BackupDataCommand ?? (_BackupDataCommand = new RelayCommand<object>((o) =>
                 {
-                    System.IO.File.WriteAllText(Define.BackupFilePath, JsonConvert.SerializeObject(this, Formatting.Indented));
+                    var backupData = new BackupData {
+                        SelectedLine = this.SelectedLine,
+                        SelectedMachine = this.SelectedMachine,
+                        IPInfo = this.IPInfo,
+                        PathToLineList = this.PathToLineList,
+                        UseBasicContentHelper = HelperStatus.UseBasicContentHelper,
+                        UseNetworkHelper = HelperStatus.UseNetworkHelper,
+                        UseSpecificContentHelper = HelperStatus.UseSpecificContentHelper,
+                    };
+
+                    System.IO.File.WriteAllText(Define.BackupFilePath, JsonConvert.SerializeObject(backupData, Formatting.Indented));
                     Define.Logger.AddLog("MAIN", "Program End");
                     Define.Logger.Dispose();
                 }));
@@ -279,6 +289,10 @@ namespace MESInstaller.ViewModels
             SelectedMachine = backupData.SelectedMachine;
             IPInfo = backupData.IPInfo;
             PathToLineList = backupData.PathToLineList;
+
+            HelperStatus.UseBasicContentHelper = backupData.UseBasicContentHelper;
+            HelperStatus.UseNetworkHelper = backupData.UseNetworkHelper;
+            HelperStatus.UseSpecificContentHelper = backupData.UseSpecificContentHelper;
         }
 
         private void PrintStartLog()

@@ -15,6 +15,8 @@ namespace MESInstaller.Helpers
 
         protected override void Execute()
         {
+            if (HelperStatus.UseNetworkHelper == false) return;
+
             try
             {
                 SetIP(iPData.IPString, iPData.SubnetMask, iPData.DefaultGateway);

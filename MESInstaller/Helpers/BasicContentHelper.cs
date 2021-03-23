@@ -26,6 +26,8 @@ namespace MESInstaller.Helpers
 
         protected override void Execute()
         {
+            if (HelperStatus.UseBasicContentHelper == false) return;
+
             ContentCopy(basicContentPath);
         }
 
