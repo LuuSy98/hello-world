@@ -115,7 +115,8 @@ namespace MESInstaller.Helpers
                 // Create file if file not created
                 if (File.Exists(file) == false)
                 {
-                    File.Create(file);
+                    Directory.CreateDirectory(Path.GetDirectoryName(file));
+                    File.Create(file).Dispose();
                     Define.Logger.AddLog("DATA", $"Create \'{file}\' Success!");
                 }
             }
