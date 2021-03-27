@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace MESInstaller.ViewModels
@@ -233,9 +234,22 @@ namespace MESInstaller.ViewModels
             }
         }
 
-#endregion
+        public ICommand ChangeLanguageCommand
+        {
+            get
+            {
+                return _ChangeLanguageCommand ?? (_ChangeLanguageCommand = new RelayCommand<object>((o) =>
+                {
+                    MenuItem menu = o as MenuItem;
+                    App.SelectCulture(menu.Tag.ToString());
 
-#region Constructor
+                    OnPropertyChanged(string.Empty);
+                }));
+            }
+        }
+        #endregion
+
+        #region Constructor
         public MainWindowViewModel()
         {
             Define.Logger.AddLog(new LogData { ProgressName = "MAIN", LogMessage = "Program Started" });
@@ -244,32 +258,32 @@ namespace MESInstaller.ViewModels
 
             LoadBackupData();
         }
-#endregion
+        #endregion
 
-#region Functions
+        #region Functions
         private bool InputValid()
         {
             if (string.IsNullOrEmpty(SelectedLine) || string.IsNullOrEmpty(SelectedMachine))
             {
-                MessageBox.Show("Select line and machine first!");
+                MessageBox.Show((string)Application.Current.FindResource("warningSelectLineAndMachine"));
                 return false;
             }
 
             if (string.IsNullOrEmpty(PathToLineList))
             {
-                MessageBox.Show("Select content directory first!");
+                MessageBox.Show((string)Application.Current.FindResource("warningSelectContentDirectoryFirst"));
                 return false;
             }
 
             if (IPAddress.TryParse(IPInfo.IPString, out IPAddress ip) == false)
             {
-                MessageBox.Show("IP wrong format!");
+                MessageBox.Show((string)Application.Current.FindResource("warningIpWrongFormat"));
                 return false;
             }
 
             if (string.IsNullOrEmpty(InputMachineNumber))
             {
-                MessageBox.Show("Input machine number please!");
+                MessageBox.Show((string)Application.Current.FindResource("warningIpMachineNumber"));
                 return false;
             }
 
@@ -348,7 +362,8 @@ namespace MESInstaller.ViewModels
         private ICommand _InstallStartCommand;
         private ICommand _LineListPathBrowseCommand;
         private ICommand _BackupDataCommand;
-        private ICommand _NavigateCommand; 
+        private ICommand _NavigateCommand;
+        private ICommand _ChangeLanguageCommand;
 #endregion
     }
 }

@@ -54,16 +54,16 @@
             VerticalAlignment="Bottom" HorizontalAlignment="Left"
             IsChecked="{Binding IPInfo.SkipDNS, Mode=TwoWay}"/>
 
-        <TextBox Grid.Column="1" Grid.Row="0" Margin="0 10" TextAlignment="Center" FontSize="20"
+        <TextBox Grid.Column="1" Grid.Row="0" Margin="0 10" TextAlignment="Center" FontSize="16"
             Text="{Binding IPInfo.IPString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-        <TextBox Grid.Column="1" Grid.Row="1" Margin="0 10" TextAlignment="Center" FontSize="20"
+        <TextBox Grid.Column="1" Grid.Row="1" Margin="0 10" TextAlignment="Center" FontSize="16"
             Text="{Binding IPInfo.SubnetMask, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-        <TextBox Grid.Column="1" Grid.Row="2" Margin="0 10" TextAlignment="Center" FontSize="20"
+        <TextBox Grid.Column="1" Grid.Row="2" Margin="0 10" TextAlignment="Center" FontSize="16"
             Text="{Binding IPInfo.DefaultGateway, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-        <TextBox Grid.Column="1" Grid.Row="4" Margin="0 10" TextAlignment="Center" FontSize="20"
+        <TextBox Grid.Column="1" Grid.Row="4" Margin="0 10" TextAlignment="Center" FontSize="16"
             Text="{Binding IPInfo.PreferredDNS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             IsReadOnly="{Binding IPInfo.SkipDNS}"/>
-        <TextBox Grid.Column="1" Grid.Row="5" Margin="0 10" TextAlignment="Center" FontSize="20"
+        <TextBox Grid.Column="1" Grid.Row="5" Margin="0 10" TextAlignment="Center" FontSize="16"
             Text="{Binding IPInfo.AlternateDNS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             IsReadOnly="{Binding IPInfo.SkipDNS}"/>
 

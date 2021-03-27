@@ -13,5 +13,6 @@ namespace MESInstaller.Helpers
         public static bool UseSpecificContentHelper { get; set; } = true;
 
         public static bool DataBuildMode { get; set; } = false;
+        public static bool DeployEASAgent { get; set; } = false;
     }
 }

@@ -38,7 +38,12 @@ namespace MESInstaller.Helpers
             CompletedPercentage += 30;
             DeployTMAX(Content_SourceDirectory);
             CompletedPercentage += 30;
-            DeployEASAgent(Content_SourceDirectory);
+
+            if (HelperStatus.DeployEASAgent)
+            {
+                DeployEASAgent(Content_SourceDirectory);
+            }
+
             CompletedPercentage = 100;
         }
 
