@@ -1,5 +1,5 @@
 # hello-world
-duong_co_ban_GIT
+GIT
 
 At the moment, I'm a new staff at TOP company.
 
